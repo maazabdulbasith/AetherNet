@@ -12,8 +12,11 @@ import {
   useToast,
   Box,
   Flex,
+  Icon,
+  Badge,
 } from '@chakra-ui/react';
 import { useState } from 'react';
+import { FiCpu, FiMessageSquare, FiZap } from 'react-icons/fi';
 import type { AIModel } from '../types';
 
 interface ModelSelectorProps {
@@ -26,19 +29,35 @@ interface ModelSelectorProps {
 const getModelColor = (modelId: string) => {
   switch (modelId) {
     case 'gemini-pro':
-      return 'brand.gemini';
+      return {
+        bg: 'linear-gradient(135deg, #4285F4 0%, #34A853 100%)',
+        border: '#4285F4',
+        icon: FiZap
+      };
     case 'mistral-medium':
-      return 'brand.mistral';
-    case 'llama2':
-      return 'brand.llama';
-    case 'falcon-7b':
-      return 'brand.falcon';
-    case 'phi-2':
-      return 'brand.phi';
-    case 'codellama':
-      return 'brand.llama';
+      return {
+        bg: 'linear-gradient(135deg, #7C3AED 0%, #EC4899 100%)',
+        border: '#7C3AED',
+        icon: FiCpu
+      };
+    case 'cohere-command-r-plus':
+      return {
+        bg: 'linear-gradient(135deg, #EC4899 0%, #F59E0B 100%)',
+        border: '#EC4899',
+        icon: FiMessageSquare
+      };
+    case 'HuggingFaceH4/zephyr-7b-beta':
+      return {
+        bg: 'linear-gradient(135deg, #10B981 0%, #3B82F6 100%)',
+        border: '#10B981',
+        icon: FiCpu
+      };
     default:
-      return 'brand.primary';
+      return {
+        bg: 'linear-gradient(135deg, #00ff00 0%, #00cc00 100%)',
+        border: '#00ff00',
+        icon: FiCpu
+      };
   }
 };
 
@@ -75,45 +94,139 @@ export const ModelSelector = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="md">
-      <ModalOverlay />
-      <ModalContent maxH="80vh" display="flex" flexDirection="column">
-        <ModalHeader>Select AI Models</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody flex="1" overflowY="auto" pb={0}>
+      <ModalOverlay backdropFilter="blur(10px)" />
+      <ModalContent 
+        maxH="80vh" 
+        display="flex" 
+        flexDirection="column"
+        bg="rgba(18, 18, 18, 0.95)"
+        border="1px solid"
+        borderColor="whiteAlpha.200"
+        borderRadius="xl"
+        boxShadow="0 8px 32px rgba(0, 0, 0, 0.3)"
+      >
+        <ModalHeader 
+          fontSize="2xl" 
+          fontWeight="bold" 
+          bg="transparent"
+          borderBottom="1px solid"
+          borderColor="whiteAlpha.200"
+          pb={4}
+        >
+          Select AI Models
+        </ModalHeader>
+        <ModalCloseButton 
+          top={4} 
+          right={4}
+          color="whiteAlpha.700"
+          _hover={{ color: 'white' }}
+        />
+        <ModalBody flex="1" overflowY="auto" pb={6}>
           <VStack spacing={4} align="stretch">
-            {availableModels.map((model) => (
-              <Box
-                key={model.id}
-                p={3}
-                border="1px solid"
-                borderColor={getModelColor(model.id)}
-                borderRadius="md"
-                bg="brand.cardBg"
-              >
-                <Checkbox
-                  isChecked={selectedModels.some((m) => m.id === model.id)}
-                  onChange={() => handleToggleModel(model)}
-                  isDisabled={!model.isAvailable}
-                  colorScheme="green"
+            {availableModels.map((model) => {
+              const colors = getModelColor(model.id);
+              const isSelected = selectedModels.some((m) => m.id === model.id);
+              
+              return (
+                <Box
+                  key={model.id}
+                  p={4}
+                  border="1px solid"
+                  borderColor={colors.border}
+                  borderRadius="xl"
+                  bg={isSelected ? colors.bg : 'rgba(255, 255, 255, 0.05)'}
+                  cursor="pointer"
+                  onClick={() => handleToggleModel(model)}
+                  position="relative"
+                  overflow="hidden"
+                  transition="all 0.3s ease"
+                  _hover={{
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)',
+                    borderColor: colors.border,
+                  }}
+                  _before={{
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    bg: colors.bg,
+                    opacity: isSelected ? 0.1 : 0,
+                    transition: 'opacity 0.3s ease',
+                  }}
                 >
-                  <VStack align="start" spacing={0}>
-                    <Text fontWeight="medium" color={getModelColor(model.id)}>
-                      {model.name}
-                    </Text>
-                    <Text fontSize="sm" opacity={0.7}>
-                      {model.provider}
-                      {model.isPaid && ' (Premium)'}
-                    </Text>
-                  </VStack>
-                </Checkbox>
-              </Box>
-            ))}
+                  <Flex align="center" gap={3}>
+                    <Icon 
+                      as={colors.icon} 
+                      boxSize={6} 
+                      color={isSelected ? 'white' : colors.border}
+                    />
+                    <VStack align="start" spacing={1} flex={1}>
+                      <Text 
+                        fontWeight="semibold" 
+                        color={isSelected ? 'white' : colors.border}
+                      >
+                        {model.name}
+                      </Text>
+                      <Flex gap={2} align="center">
+                        <Badge 
+                          colorScheme={model.provider === 'google' ? 'blue' : 
+                                     model.provider === 'mistral' ? 'purple' :
+                                     model.provider === 'cohere' ? 'pink' : 'green'}
+                          variant="subtle"
+                          borderRadius="full"
+                          px={2}
+                        >
+                          {model.provider}
+                        </Badge>
+                        {model.isPaid && (
+                          <Badge 
+                            colorScheme="yellow" 
+                            variant="subtle"
+                            borderRadius="full"
+                            px={2}
+                          >
+                            Premium
+                          </Badge>
+                        )}
+                      </Flex>
+                    </VStack>
+                    <Checkbox
+                      isChecked={isSelected}
+                      onChange={() => handleToggleModel(model)}
+                      isDisabled={!model.isAvailable}
+                      colorScheme="green"
+                      pointerEvents="none"
+                      size="lg"
+                    />
+                  </Flex>
+                </Box>
+              );
+            })}
           </VStack>
         </ModalBody>
-        <Flex p={4} borderTop="1px" borderColor="brand.primary" bg="brand.cardBg">
+        <Flex 
+          p={6} 
+          borderTop="1px solid" 
+          borderColor="whiteAlpha.200" 
+          bg="rgba(18, 18, 18, 0.95)"
+        >
           <Button
             w="100%"
             onClick={handleCreate}
+            bg="linear-gradient(135deg, #00ff00 0%, #00cc00 100%)"
+            color="black"
+            fontWeight="bold"
+            size="lg"
+            _hover={{
+              transform: 'translateY(-1px)',
+              boxShadow: '0 4px 20px rgba(0, 255, 0, 0.2)',
+            }}
+            _active={{
+              transform: 'translateY(0)',
+            }}
           >
             Create Chat
           </Button>

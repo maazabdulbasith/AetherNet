@@ -7,7 +7,7 @@ interface ChatState {
   chats: Chat[];
   activeChat: Chat | null;
   availableModels: AIModel[];
-  setActiveChat: (chat: Chat) => void;
+  setActiveChat: (chat: Chat | null) => void;
   addMessage: (chatId: string, message: Message) => void;
   createChat: (name: string, participants: AIModel[]) => void;
   deleteChat: (chatId: string) => void;
@@ -24,50 +24,6 @@ const defaultModels: AIModel[] = [
     isPaid: false,
   },
   {
-    id: 'ollama-llama2',
-    name: 'Llama 2 (Local)',
-    provider: 'ollama',
-    model: 'llama2',
-    isAvailable: true,
-    isPaid: false,
-    isLocal: true,
-    baseUrl: 'http://localhost:11434',
-  },
-  {
-    id: 'ollama-codellama',
-    name: 'CodeLlama (Local)',
-    provider: 'ollama',
-    model: 'codellama',
-    isAvailable: true,
-    isPaid: false,
-    isLocal: true,
-    baseUrl: 'http://localhost:11434',
-  },
-  {
-    id: 'cohere-command',
-    name: 'Command',
-    provider: 'cohere',
-    model: 'command',
-    isAvailable: true,
-    isPaid: false,
-  },
-  {
-    id: 'cohere-command-light',
-    name: 'Command Light',
-    provider: 'cohere',
-    model: 'command-light',
-    isAvailable: true,
-    isPaid: false,
-  },
-  {
-    id: 'cohere-command-r',
-    name: 'Command R',
-    provider: 'cohere',
-    model: 'command-r',
-    isAvailable: true,
-    isPaid: false,
-  },
-  {
     id: 'cohere-command-r-plus',
     name: 'Command R+',
     provider: 'cohere',
@@ -76,23 +32,15 @@ const defaultModels: AIModel[] = [
     isPaid: false,
   },
   {
-    id: 'huggingface-falcon',
-    name: 'Falcon',
+    id: 'HuggingFaceH4/zephyr-7b-beta',
+    name: 'Zephyr 7B Beta',
     provider: 'huggingface',
-    model: 'falcon',
+    model: 'HuggingFaceH4/zephyr-7b-beta',
     isAvailable: true,
     isPaid: false,
   },
   {
-    id: 'huggingface-mistral',
-    name: 'Mistral',
-    provider: 'huggingface',
-    model: 'mistral',
-    isAvailable: true,
-    isPaid: false,
-  },
-  {
-    id: 'google-gemini',
+    id: 'gemini-pro',
     name: 'Gemini Pro',
     provider: 'google',
     model: 'gemini-pro',
