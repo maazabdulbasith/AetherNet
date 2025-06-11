@@ -7,11 +7,15 @@ interface ChatState {
   chats: Chat[];
   activeChat: Chat | null;
   availableModels: AIModel[];
+  isLoading: boolean;
+  error: string | null;
   setActiveChat: (chat: Chat | null) => void;
   addMessage: (chatId: string, message: Message) => void;
-  createChat: (name: string, participants: AIModel[]) => void;
+  createChat: (name: string, participants: AIModel[]) => Chat;
   deleteChat: (chatId: string) => void;
   updateModelBaseUrl: (modelId: string, baseUrl: string) => void;
+  setLoading: (isLoading: boolean) => void;
+  setError: (error: string | null) => void;
 }
 
 const defaultModels: AIModel[] = [
@@ -53,6 +57,8 @@ export const useChatStore = create<ChatState>((set) => ({
   chats: [],
   activeChat: null,
   availableModels: defaultModels,
+  isLoading: false,
+  error: null,
   setActiveChat: (chat) => set({ activeChat: chat }),
   addMessage: (chatId, message) =>
     set((state) => ({
@@ -65,21 +71,21 @@ export const useChatStore = create<ChatState>((set) => ({
         ? { ...state.activeChat, messages: [...state.activeChat.messages, message] }
         : state.activeChat,
     })),
-  createChat: (name, participants) =>
-    set((state) => {
-      const newChat = {
-        id: uuidv4(),
-        name,
-        messages: [],
-        participants,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      return {
-        chats: [...state.chats, newChat],
-        activeChat: newChat,
-      };
-    }),
+  createChat: (name, participants) => {
+    const newChat = {
+      id: uuidv4(),
+      name,
+      messages: [],
+      participants,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    set((state) => ({
+      chats: [...state.chats, newChat],
+      activeChat: newChat,
+    }));
+    return newChat;
+  },
   deleteChat: (chatId) =>
     set((state) => ({
       chats: state.chats.filter((chat) => chat.id !== chatId),
@@ -91,4 +97,6 @@ export const useChatStore = create<ChatState>((set) => ({
         model.id === modelId ? { ...model, baseUrl } : model
       ),
     })),
+  setLoading: (isLoading) => set({ isLoading }),
+  setError: (error) => set({ error }),
 })); 

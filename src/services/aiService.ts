@@ -168,16 +168,24 @@ class AIService {
         context,
       });
 
+      if (!response.data || !response.data.content) {
+        throw new Error('Invalid response format from Google API');
+      }
+
       return {
         content: response.data.content,
         modelId: model.id,
       };
     } catch (error) {
       console.error('Google API error:', error);
-      if (error instanceof Error) {
-        throw new Error(`Google API error: ${error.message}`);
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          throw new Error(`Google API error: ${error.response.status} - ${error.response.data?.error || 'Unknown error'}`);
+        } else if (error.request) {
+          throw new Error('No response received from Google API');
+        }
       }
-      throw new Error('Unknown error occurred');
+      throw new Error('Failed to communicate with Google API');
     }
   }
 
@@ -186,27 +194,43 @@ class AIService {
     model: AIModel,
     context: APIMessage[]
   ): Promise<AIResponse> {
-    const response = await axios.post(
-      'https://api.mistral.ai/v1/chat/completions',
-      {
-        model: model.model,
-        messages: [
-          ...context,
-          { role: 'user', content: message },
-        ],
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${this.getApiKey('mistral')}`,
-          'Content-Type': 'application/json',
+    try {
+      const response = await axios.post(
+        'https://api.mistral.ai/v1/chat/completions',
+        {
+          model: model.model,
+          messages: [
+            ...context,
+            { role: 'user', content: message },
+          ],
         },
-      }
-    );
+        {
+          headers: {
+            'Authorization': `Bearer ${this.getApiKey('mistral')}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
-    return {
-      content: response.data.choices[0].message.content,
-      modelId: model.id,
-    };
+      if (!response.data || !response.data.choices?.[0]?.message?.content) {
+        throw new Error('Invalid response format from Mistral API');
+      }
+
+      return {
+        content: response.data.choices[0].message.content,
+        modelId: model.id,
+      };
+    } catch (error) {
+      console.error('Mistral API error:', error);
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          throw new Error(`Mistral API error: ${error.response.status} - ${error.response.data?.error || 'Unknown error'}`);
+        } else if (error.request) {
+          throw new Error('No response received from Mistral API');
+        }
+      }
+      throw new Error('Failed to communicate with Mistral API');
+    }
   }
 
   private async sendToCohere(

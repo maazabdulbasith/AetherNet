@@ -8,7 +8,7 @@ export interface Message {
 export interface AIModel {
   id: string;
   name: string;
-  provider: 'google' | 'mistral' | 'cohere' | 'huggingface';
+  provider: 'google' | 'mistral' | 'cohere' | 'huggingface' | 'openai' | 'anthropic' | 'ollama' | 'local';
   model: string;
   isAvailable: boolean;
   isPaid: boolean;

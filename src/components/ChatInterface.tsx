@@ -30,7 +30,7 @@ import {
   Card,
   Link,
 } from '@chakra-ui/react';
-import { FiSend, FiPlus, FiArrowLeft, FiMessageSquare, FiCpu, FiUsers, FiX, FiGithub, FiLinkedin } from 'react-icons/fi';
+import { FiSend, FiPlus, FiArrowLeft, FiMessageSquare, FiCpu, FiUsers, FiX, FiGithub, FiLinkedin, FiInfo, FiZap } from 'react-icons/fi';
 import { useChatStore } from '../store/chatStore';
 import type { Message, AIModel } from '../types';
 import { aiService } from '../services/aiService';
@@ -38,6 +38,7 @@ import { ModelInfoDialog } from './ModelInfoDialog';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { FutureVisionDialog } from './FutureVisionDialog';
 
 interface AIResponse {
   content: string;
@@ -121,7 +122,8 @@ const ModelSelectionModal = ({ isOpen, onClose, onStartChat }: {
 const LandingPage = () => {
   const { isOpen: isModelSelectorOpen, onOpen: onModelSelectorOpen, onClose: onModelSelectorClose } = useDisclosure();
   const { isOpen: isModelInfoOpen, onOpen: onModelInfoOpen, onClose: onModelInfoClose } = useDisclosure();
-  const { createChat, availableModels } = useChatStore();
+  const { isOpen: isFutureVisionOpen, onOpen: onFutureVisionOpen, onClose: onFutureVisionClose } = useDisclosure();
+  const { createChat, availableModels, setActiveChat } = useChatStore();
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const hoverBg = useColorModeValue('gray.50', 'gray.700');
@@ -133,7 +135,9 @@ const LandingPage = () => {
   const hoverColor = useColorModeValue('brand.soft.600', 'brand.soft.300');
 
   const handleStartChat = (selectedModels: AIModel[]) => {
-    createChat('New Chat', selectedModels);
+    const newChat = createChat('New Chat', selectedModels);
+    setActiveChat(newChat);
+    onModelSelectorClose();
   };
 
   return (
@@ -161,25 +165,46 @@ const LandingPage = () => {
         </Text>
       </VStack>
 
-      <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8} maxW="800px" w="full">
-        <Card
-          p={6}
-          bg="white"
-          _dark={{ bg: 'gray.800' }}
-          shadow="lg"
-          _hover={{ transform: 'translateY(-4px)', shadow: 'xl' }}
-          transition="all 0.2s"
-          cursor="pointer"
-          onClick={onModelSelectorOpen}
-        >
-          <VStack spacing={4} align="start">
-            <Icon as={FiMessageSquare} w={8} h={8} color="brand.soft.500" />
-            <Heading size="md">Start a New Chat</Heading>
-            <Text color={textColor}>
-              Begin a conversation with your chosen AI models. Select multiple models for a group chat experience.
-            </Text>
-          </VStack>
-        </Card>
+      <VStack spacing={8} maxW="1200px" w="full">
+        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8} w="full">
+          <Card
+            p={6}
+            bg="white"
+            _dark={{ bg: 'gray.800' }}
+            shadow="lg"
+            _hover={{ transform: 'translateY(-4px)', shadow: 'xl' }}
+            transition="all 0.2s"
+            cursor="pointer"
+            onClick={onModelSelectorOpen}
+          >
+            <VStack spacing={4} align="start">
+              <Icon as={FiMessageSquare} w={8} h={8} color="brand.soft.500" />
+              <Heading size="md">Start a New Chat</Heading>
+              <Text color={textColor}>
+                Begin a conversation with your chosen AI models. Select multiple models for a group chat experience.
+              </Text>
+            </VStack>
+          </Card>
+
+          <Card
+            p={6}
+            bg="white"
+            _dark={{ bg: 'gray.800' }}
+            shadow="lg"
+            _hover={{ transform: 'translateY(-4px)', shadow: 'xl' }}
+            transition="all 0.2s"
+            cursor="pointer"
+            onClick={onModelInfoOpen}
+          >
+            <VStack spacing={4} align="start">
+              <Icon as={FiCpu} w={8} h={8} color="brand.ocean.500" />
+              <Heading size="md">Available Models</Heading>
+              <Text color={textColor}>
+                Explore our collection of AI models, each with unique capabilities and specialties.
+              </Text>
+            </VStack>
+          </Card>
+        </SimpleGrid>
 
         <Card
           p={6}
@@ -189,17 +214,19 @@ const LandingPage = () => {
           _hover={{ transform: 'translateY(-4px)', shadow: 'xl' }}
           transition="all 0.2s"
           cursor="pointer"
-          onClick={onModelInfoOpen}
+          onClick={onFutureVisionOpen}
+          maxW="600px"
+          w="full"
         >
           <VStack spacing={4} align="start">
-            <Icon as={FiCpu} w={8} h={8} color="brand.ocean.500" />
-            <Heading size="md">Available Models</Heading>
+            <Icon as={FiZap} w={8} h={8} color="brand.sunset.500" />
+            <Heading size="md">Future Vision</Heading>
             <Text color={textColor}>
-              Explore our collection of AI models, each with unique capabilities and specialties.
+              Discover our roadmap, upcoming features, and opportunities to collaborate on the future of AI.
             </Text>
           </VStack>
         </Card>
-      </SimpleGrid>
+      </VStack>
 
       <VStack
         spacing={4}
@@ -251,6 +278,7 @@ const LandingPage = () => {
         onClose={onModelInfoClose}
         availableModels={availableModels}
       />
+      <FutureVisionDialog isOpen={isFutureVisionOpen} onClose={onFutureVisionClose} />
     </VStack>
   );
 };
@@ -260,12 +288,12 @@ const ChatInterface: React.FC = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const [mentionQuery, setMentionQuery] = useState('');
   const [showMentions, setShowMentions] = useState(false);
   const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { colorMode, setColorMode } = useColorMode();
+  const { colorMode } = useColorMode();
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const bgColor = useColorModeValue('gray.50', 'gray.900');
   const messageBg = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
@@ -297,7 +325,6 @@ const ChatInterface: React.FC = () => {
       const query = value.slice(lastAtIndex + 1);
       setMentionQuery(query);
       setShowMentions(true);
-      setSelectedMentionIndex(0);
     } else {
       setShowMentions(false);
     }
@@ -308,7 +335,15 @@ const ChatInterface: React.FC = () => {
   ) || [];
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (showMentions) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    } else if (e.key === '@') {
+      setShowMentions(true);
+      setMentionQuery('');
+    } else if (e.key === 'Escape') {
+      setShowMentions(false);
+    } else if (showMentions) {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
         setSelectedMentionIndex(prev => 
@@ -316,16 +351,10 @@ const ChatInterface: React.FC = () => {
         );
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        setSelectedMentionIndex(prev => prev > 0 ? prev - 1 : prev);
-      } else if (e.key === 'Enter' && filteredModels.length > 0) {
+        setSelectedMentionIndex(prev => prev > 0 ? prev - 1 : 0);
+      } else if (e.key === 'Enter' && selectedMentionIndex >= 0) {
         e.preventDefault();
-        const selectedModel = filteredModels[selectedMentionIndex];
-        const lastAtIndex = input.lastIndexOf('@');
-        const newInput = input.slice(0, lastAtIndex) + `@${selectedModel.name} `;
-        setInput(newInput);
-        setShowMentions(false);
-      } else if (e.key === 'Escape') {
-        setShowMentions(false);
+        handleMentionClick(filteredModels[selectedMentionIndex]);
       }
     }
   };
@@ -506,7 +535,13 @@ const ChatInterface: React.FC = () => {
   }
 
   return (
-    <VStack h="full" spacing={0} bg={bgColor}>
+    <Box
+      h="100vh"
+      display="flex"
+      flexDirection="column"
+      bg={useColorModeValue('gray.50', 'gray.900')}
+      position="relative"
+    >
       {activeChat && (
         <Flex
           w="full"
@@ -651,7 +686,7 @@ const ChatInterface: React.FC = () => {
           setActiveChat(updatedChat);
         }}
       />
-    </VStack>
+    </Box>
   );
 };
 
