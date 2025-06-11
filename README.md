@@ -1,15 +1,20 @@
 # AetherNet
 
-A WhatsApp-style chat application for interacting with various AI models. Chat with individual AI models or create group chats where multiple AIs can debate and collaborate.
+A modern, multi-model AI chat platform that allows you to interact with various AI models individually or in group conversations. Experience the power of multiple AI models working together to provide comprehensive responses.
 
 ## Features
 
-- Chat with multiple AI models including GPT-4, Claude 3, Gemini, Mistral, and more
-- Create group chats with multiple AI models
-- Real-time message streaming
-- Modern, responsive UI
-- Free tier with open-source models and limited API access
-- Premium tier with access to advanced models (coming soon)
+- **Multi-Model Chat**: Chat with multiple AI models simultaneously
+- **Model Selection**: Choose from various AI models including:
+  - Mistral Medium
+  - Command R+ (Cohere)
+  - Zephyr 7B Beta (HuggingFace)
+  - Gemini Pro (Google)
+- **Mention System**: Use @mentions to direct questions to specific models
+- **Markdown Support**: Rich text formatting and code syntax highlighting
+- **Responsive Design**: Beautiful, modern UI that works on all devices
+- **Theme Support**: Light and dark mode with multiple color schemes
+- **Real-time Updates**: Instant message delivery and response streaming
 
 ## Getting Started
 
@@ -32,31 +37,43 @@ cd AetherNet-web
 npm install
 ```
 
-3. Start the development server:
+3. Create a `.env` file in the root directory and add your API keys:
+```env
+VITE_GOOGLE_API_KEY=your_google_api_key
+VITE_MISTRAL_API_KEY=your_mistral_api_key
+VITE_COHERE_API_KEY=your_cohere_api_key
+VITE_HUGGINGFACE_API_KEY=your_huggingface_api_key
+```
+
+4. Start the development server:
 ```bash
 npm run dev
 ```
 
-4. Open [http://localhost:5173](http://localhost:5173) in your browser.
+5. Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-### Configuration
+## Usage
 
-1. Click the settings icon in the sidebar
-2. Enter your API key for the AI models you want to use
-3. Save the settings
+### Starting a New Chat
 
-## Available Models
+1. Click "Start a New Chat" on the landing page
+2. Select one or more AI models from the available options
+3. Click "Start Chat" to begin your conversation
 
-### Free Tier
-- Gemini Pro (Google)
-- Mistral Medium
-- Cohere Command
+### Using Mentions
 
-### Premium Tier (Coming Soon)
-- GPT-4 (OpenAI)
-- Claude 3 (Anthropic)
-- Higher usage limits
-- Priority support
+- Type '@' followed by a model name to mention a specific model
+- Use arrow keys to navigate through the mention suggestions
+- Press Enter to select a model
+- Models will only respond when mentioned in a group chat
+
+### Available Models
+
+#### Free Models
+- **Mistral Medium**: Powerful language model with strong reasoning capabilities
+- **Command R+**: Cohere's advanced model for complex tasks
+- **Zephyr 7B Beta**: Open-source model with good performance
+- **Gemini Pro**: Google's latest AI model with strong capabilities
 
 ## Development
 
@@ -65,10 +82,15 @@ npm run dev
 ```
 src/
   ├── components/     # React components
+  │   ├── ChatInterface.tsx    # Main chat interface
+  │   ├── ModelInfoDialog.tsx  # Model information modal
+  │   └── FutureVisionDialog.tsx # Future features dialog
   ├── services/      # API and service integrations
+  │   └── aiService.ts         # AI model integration service
   ├── store/         # State management
-  ├── types/         # TypeScript type definitions
-  └── App.tsx        # Main application component
+  │   └── chatStore.ts         # Chat state management
+  ├── types.ts       # TypeScript type definitions
+  └── theme.ts       # UI theme configuration
 ```
 
 ### Building for Production
@@ -81,15 +103,32 @@ The build artifacts will be stored in the `dist/` directory.
 
 ## Contributing
 
+We welcome contributions! Here's how you can help:
+
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit your changes (`git commit -m 'Add some amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+### Development Guidelines
+
+- Follow the existing code style and structure
+- Add TypeScript types for all new features
+- Include tests for new functionality
+- Update documentation as needed
+
+## Future Plans
+
+- Premium tier with access to advanced models
+- Collaborative features for team usage
+- Custom model fine-tuning
+- Enhanced analytics and insights
+- API access for integration with other applications
+
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Honesty License - dont ask files for details.
 
 ## Acknowledgments
 
@@ -97,3 +136,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Chakra UI](https://chakra-ui.com/)
 - [Vite](https://vitejs.dev/)
 - [TypeScript](https://www.typescriptlang.org/)
+- [Zustand](https://github.com/pmndrs/zustand) for state management
+- [React Icons](https://react-icons.github.io/react-icons/) for beautiful icons
