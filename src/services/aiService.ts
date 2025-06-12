@@ -13,6 +13,9 @@ interface AIResponse {
 
 type Provider = 'openai' | 'anthropic' | 'google' | 'mistral' | 'cohere' | 'ollama' | 'huggingface' | 'local';
 
+// Get the API base URL from environment variables
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 class AIService {
   private static instance: AIService;
   private apiKeys: Record<Provider, string | null> = {
@@ -163,7 +166,7 @@ class AIService {
     context: APIMessage[]
   ): Promise<AIResponse> {
     try {
-      const response = await axios.post('/api/gemini', {
+      const response = await axios.post(`${API_BASE}/api/gemini`, {
         message,
         context,
       });
@@ -195,10 +198,9 @@ class AIService {
     context: APIMessage[]
   ): Promise<AIResponse> {
     try {
-      const response = await axios.post('/api/mistral', {
+      const response = await axios.post(`${API_BASE}/api/mistral`, {
         message,
         context,
-        model: model.model,
       });
 
       if (!response.data || !response.data.content) {
@@ -228,11 +230,14 @@ class AIService {
     context: APIMessage[]
   ): Promise<AIResponse> {
     try {
-      const response = await axios.post('/api/cohere', {
+      const response = await axios.post(`${API_BASE}/api/cohere`, {
         message,
         context,
-        model: model.model,
       });
+
+      if (!response.data || !response.data.content) {
+        throw new Error('Invalid response format from Cohere API');
+      }
 
       return {
         content: response.data.content,
@@ -240,10 +245,14 @@ class AIService {
       };
     } catch (error) {
       console.error('Cohere API error:', error);
-      if (error instanceof Error) {
-        throw new Error(`Cohere API error: ${error.message}`);
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          throw new Error(`Cohere API error: ${error.response.status} - ${error.response.data?.error || 'Unknown error'}`);
+        } else if (error.request) {
+          throw new Error('No response received from Cohere API');
+        }
       }
-      throw new Error('Unknown error occurred');
+      throw new Error('Failed to communicate with Cohere API');
     }
   }
 

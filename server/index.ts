@@ -14,7 +14,30 @@ console.log('COHERE_KEY loaded:', process.env.COHERE_KEY ? 'Yes' : 'No');
 console.log('PORT:', process.env.PORT || 4000);
 
 const app = express();
-app.use(cors());
+
+// Configure CORS
+const allowedOrigins = [
+  'https://aethernet-f.onrender.com',  // Production frontend
+  'http://localhost:3000',           // Local development
+  'http://localhost:5173'            // Vite dev server
+];
+
+app.use(cors({
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
+
 app.use(express.json());
 
 // Google Gemini endpoint
