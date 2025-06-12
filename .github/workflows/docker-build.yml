@@ -26,13 +26,15 @@ jobs:
       - name: Build and push frontend
         uses: docker/build-push-action@v4
         with:
-          context: ./AetherNet-web
+          context: .                      # Root directory
+          file: ./Dockerfile             # Frontend Dockerfile path
           push: true
-          tags: your-dockerhub-username/aethernet-frontend:latest
+          tags: maazabdulbasith/aethernet-frontend:latest
 
       - name: Build and push backend
         uses: docker/build-push-action@v4
         with:
-          context: ./AetherNet-web/server
+          context: ./server              # Backend folder
+          file: ./server/Dockerfile      # Backend Dockerfile path
           push: true
-          tags: your-dockerhub-username/aethernet-backend:latest
+          tags: maazabdulbasith/aethernet-backend:latest
