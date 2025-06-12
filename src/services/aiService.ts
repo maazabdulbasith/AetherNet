@@ -305,4 +305,43 @@ class AIService {
   }
 }
 
-export const aiService = AIService.getInstance(); 
+export const aiService = AIService.getInstance();
+
+export const sendToGoogle = async (message: string, context: string = ''): Promise<AIResponse> => {
+  try {
+    const response = await axios.post(`${API_BASE}/api/gemini`, {
+      message,
+      context
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Google API error:', error);
+    throw new Error(`Google API error: ${error.response?.status || 'Unknown error'}`);
+  }
+};
+
+export const sendToMistral = async (message: string, context: string = ''): Promise<AIResponse> => {
+  try {
+    const response = await axios.post(`${API_BASE}/api/mistral`, {
+      message,
+      context
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Mistral API error:', error);
+    throw new Error(`Mistral API error: ${error.response?.status || 'Unknown error'}`);
+  }
+};
+
+export const sendToCohere = async (message: string, context: string = ''): Promise<AIResponse> => {
+  try {
+    const response = await axios.post(`${API_BASE}/api/cohere`, {
+      message,
+      context
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Cohere API error:', error);
+    throw new Error(`Cohere API error: ${error.response?.status || 'Unknown error'}`);
+  }
+}; 

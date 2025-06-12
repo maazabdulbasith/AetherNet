@@ -1,4 +1,5 @@
-version: '3'
+version: '3.8'
+
 services:
   frontend:
     container_name: AetherNet-frontend
@@ -8,12 +9,11 @@ services:
     ports:
       - "80:80"
     environment:
-      - GEMINI_KEY=${GEMINI_KEY}
-      - MISTRAL_KEY=${MISTRAL_KEY}
-      - COHERE_KEY=${COHERE_KEY}
-      - HF_KEY=${HF_KEY}
+      - VITE_API_URL=https://aethernet-w1ss.onrender.com
     depends_on:
       - backend
+    networks:
+      - aethernet-network
 
   backend:
     container_name: AetherNet-backend
@@ -23,7 +23,15 @@ services:
     ports:
       - "4000:4000"
     environment:
+      - NODE_ENV=production
+      - PORT=4000
       - GEMINI_KEY=${GEMINI_KEY}
+      - HF_KEY=${HF_KEY}
       - MISTRAL_KEY=${MISTRAL_KEY}
       - COHERE_KEY=${COHERE_KEY}
-      - HF_KEY=${HF_KEY}
+    networks:
+      - aethernet-network
+
+networks:
+  aethernet-network:
+    driver: bridge
