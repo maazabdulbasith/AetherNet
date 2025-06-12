@@ -9,26 +9,9 @@ services:
     ports:
       - "80:80"
     environment:
-      - VITE_API_URL=https://aethernet-w1ss.onrender.com
+      - VITE_API_URL=
     depends_on:
       - backend
-    networks:
-      - aethernet-network
-
-  backend:
-    container_name: AetherNet-backend
-    build:
-      context: ./server
-      dockerfile: Dockerfile
-    ports:
-      - "4000:4000"
-    environment:
-      - NODE_ENV=production
-      - PORT=4000
-      - GEMINI_KEY=${GEMINI_KEY}
-      - HF_KEY=${HF_KEY}
-      - MISTRAL_KEY=${MISTRAL_KEY}
-      - COHERE_KEY=${COHERE_KEY}
     networks:
       - aethernet-network
 

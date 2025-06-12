@@ -166,7 +166,7 @@ class AIService {
     context: APIMessage[]
   ): Promise<AIResponse> {
     try {
-      const response = await axios.post(`${API_BASE}/api/gemini`, {
+      const response = await axios.post(`/api/gemini`, {
         message,
         context,
       });
@@ -179,16 +179,9 @@ class AIService {
         content: response.data.content,
         modelId: model.id,
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Google API error:', error);
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          throw new Error(`Google API error: ${error.response.status} - ${error.response.data?.error || 'Unknown error'}`);
-        } else if (error.request) {
-          throw new Error('No response received from Google API');
-        }
-      }
-      throw new Error('Failed to communicate with Google API');
+      throw new Error(`Google API error: ${error.response?.status || 'Unknown error'}`);
     }
   }
 
@@ -198,7 +191,7 @@ class AIService {
     context: APIMessage[]
   ): Promise<AIResponse> {
     try {
-      const response = await axios.post(`${API_BASE}/api/mistral`, {
+      const response = await axios.post(`/api/mistral`, {
         message,
         context,
       });
@@ -211,16 +204,9 @@ class AIService {
         content: response.data.content,
         modelId: model.id,
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Mistral API error:', error);
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          throw new Error(`Mistral API error: ${error.response.status} - ${error.response.data?.error || 'Unknown error'}`);
-        } else if (error.request) {
-          throw new Error('No response received from Mistral API');
-        }
-      }
-      throw new Error('Failed to communicate with Mistral API');
+      throw new Error(`Mistral API error: ${error.response?.status || 'Unknown error'}`);
     }
   }
 
@@ -230,7 +216,7 @@ class AIService {
     context: APIMessage[]
   ): Promise<AIResponse> {
     try {
-      const response = await axios.post(`${API_BASE}/api/cohere`, {
+      const response = await axios.post(`/api/cohere`, {
         message,
         context,
       });
@@ -243,16 +229,9 @@ class AIService {
         content: response.data.content,
         modelId: model.id,
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Cohere API error:', error);
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          throw new Error(`Cohere API error: ${error.response.status} - ${error.response.data?.error || 'Unknown error'}`);
-        } else if (error.request) {
-          throw new Error('No response received from Cohere API');
-        }
-      }
-      throw new Error('Failed to communicate with Cohere API');
+      throw new Error(`Cohere API error: ${error.response?.status || 'Unknown error'}`);
     }
   }
 
@@ -309,12 +288,12 @@ export const aiService = AIService.getInstance();
 
 export const sendToGoogle = async (message: string, context: string = ''): Promise<AIResponse> => {
   try {
-    const response = await axios.post(`${API_BASE}/api/gemini`, {
+    const response = await axios.post(`/api/gemini`, {
       message,
       context
     });
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Google API error:', error);
     throw new Error(`Google API error: ${error.response?.status || 'Unknown error'}`);
   }
@@ -322,12 +301,12 @@ export const sendToGoogle = async (message: string, context: string = ''): Promi
 
 export const sendToMistral = async (message: string, context: string = ''): Promise<AIResponse> => {
   try {
-    const response = await axios.post(`${API_BASE}/api/mistral`, {
+    const response = await axios.post(`/api/mistral`, {
       message,
       context
     });
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Mistral API error:', error);
     throw new Error(`Mistral API error: ${error.response?.status || 'Unknown error'}`);
   }
@@ -335,12 +314,12 @@ export const sendToMistral = async (message: string, context: string = ''): Prom
 
 export const sendToCohere = async (message: string, context: string = ''): Promise<AIResponse> => {
   try {
-    const response = await axios.post(`${API_BASE}/api/cohere`, {
+    const response = await axios.post(`/api/cohere`, {
       message,
       context
     });
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Cohere API error:', error);
     throw new Error(`Cohere API error: ${error.response?.status || 'Unknown error'}`);
   }
