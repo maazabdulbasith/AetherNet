@@ -195,29 +195,18 @@ class AIService {
     context: APIMessage[]
   ): Promise<AIResponse> {
     try {
-      const response = await axios.post(
-        'https://api.mistral.ai/v1/chat/completions',
-        {
-          model: model.model,
-          messages: [
-            ...context,
-            { role: 'user', content: message },
-          ],
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${this.getApiKey('mistral')}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      const response = await axios.post('/api/mistral', {
+        message,
+        context,
+        model: model.model,
+      });
 
-      if (!response.data || !response.data.choices?.[0]?.message?.content) {
+      if (!response.data || !response.data.content) {
         throw new Error('Invalid response format from Mistral API');
       }
 
       return {
-        content: response.data.choices[0].message.content,
+        content: response.data.content,
         modelId: model.id,
       };
     } catch (error) {

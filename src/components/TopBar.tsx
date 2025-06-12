@@ -16,8 +16,9 @@ import {
   ModalCloseButton,
   Button,
   VStack,
+  useColorMode,
 } from '@chakra-ui/react';
-import { FiMoreVertical, FiEdit2 } from 'react-icons/fi';
+import { FiMoreVertical, FiEdit2, FiSun, FiMoon } from 'react-icons/fi';
 import { useState } from 'react';
 import { useChatStore } from '../store/chatStore';
 
@@ -25,6 +26,7 @@ export const TopBar = () => {
   const { activeChat, chats, setActiveChat } = useChatStore();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [newName, setNewName] = useState('');
+  const { colorMode, toggleColorMode } = useColorMode();
 
   const handleEditName = () => {
     if (!activeChat) return;
@@ -70,19 +72,27 @@ export const TopBar = () => {
         <Text fontSize="lg" fontWeight="medium" noOfLines={1}>
           {activeChat.name || formatParticipants()}
         </Text>
-        <Menu>
-          <MenuButton
-            as={IconButton}
-            icon={<FiMoreVertical />}
+        <Box display="flex" alignItems="center" gap={2}>
+          <IconButton
+            icon={colorMode === 'dark' ? <FiSun /> : <FiMoon />}
+            onClick={toggleColorMode}
             variant="ghost"
-            aria-label="Chat options"
+            aria-label="Toggle color mode"
           />
-          <MenuList>
-            <MenuItem icon={<FiEdit2 />} onClick={handleEditName}>
-              Edit Chat Name
-            </MenuItem>
-          </MenuList>
-        </Menu>
+          <Menu>
+            <MenuButton
+              as={IconButton}
+              icon={<FiMoreVertical />}
+              variant="ghost"
+              aria-label="Chat options"
+            />
+            <MenuList>
+              <MenuItem icon={<FiEdit2 />} onClick={handleEditName}>
+                Edit Chat Name
+              </MenuItem>
+            </MenuList>
+          </Menu>
+        </Box>
       </Box>
 
       <Modal isOpen={isOpen} onClose={onClose}>

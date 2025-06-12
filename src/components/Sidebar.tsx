@@ -12,6 +12,7 @@ import {
   Tooltip,
   Badge,
   useColorModeValue,
+  useColorMode,
   Menu,
   MenuButton,
   MenuList,
@@ -25,7 +26,7 @@ import {
   Heading,
   HStack,
 } from '@chakra-ui/react';
-import { FiSettings, FiPlus, FiMessageSquare, FiCpu, FiMoreVertical, FiTrash2 } from 'react-icons/fi';
+import { FiSettings, FiPlus, FiMessageSquare, FiCpu, FiMoreVertical, FiTrash2, FiSun, FiMoon } from 'react-icons/fi';
 import { useChatStore } from '../store/chatStore';
 import { ModelSelector } from './ModelSelector';
 import { Settings } from './Settings';
@@ -36,6 +37,7 @@ export const Sidebar = () => {
   const { isOpen: isModelSelectorOpen, onOpen: onModelSelectorOpen, onClose: onModelSelectorClose } = useDisclosure();
   const { isOpen: isSettingsOpen, onOpen: onSettingsOpen, onClose: onSettingsClose } = useDisclosure();
   const { isOpen: isDeleteDialogOpen, onOpen: onDeleteDialogOpen, onClose: onDeleteDialogClose } = useDisclosure();
+  const { colorMode, toggleColorMode } = useColorMode();
   const cancelRef = React.useRef<HTMLButtonElement>(null);
   const [chatToDelete, setChatToDelete] = React.useState<string | null>(null);
 
@@ -81,19 +83,34 @@ export const Sidebar = () => {
           AetherNet
         </Heading>
 
-        <Button
-          leftIcon={<Icon as={FiPlus} />}
-          colorScheme="green"
-          variant="solid"
-          onClick={onModelSelectorOpen}
-          _hover={{
-            transform: 'translateY(-2px)',
-            boxShadow: 'lg',
-          }}
-          transition="all 0.2s"
-        >
-          New Chat
-        </Button>
+        <Flex gap={2}>
+          <Button
+            leftIcon={<Icon as={FiPlus} />}
+            colorScheme="green"
+            variant="solid"
+            onClick={onModelSelectorOpen}
+            _hover={{
+              transform: 'translateY(-2px)',
+              boxShadow: 'lg',
+            }}
+            transition="all 0.2s"
+            flex={1}
+          >
+            New Chat
+          </Button>
+          <IconButton
+            icon={colorMode === 'dark' ? <FiSun /> : <FiMoon />}
+            onClick={toggleColorMode}
+            variant="outline"
+            colorScheme="green"
+            aria-label="Toggle color mode"
+            _hover={{
+              transform: 'translateY(-2px)',
+              boxShadow: 'lg',
+            }}
+            transition="all 0.2s"
+          />
+        </Flex>
 
         <VStack spacing={2} align="stretch" overflowY="auto" maxH="calc(100vh - 200px)">
           {chats.map((chat) => (

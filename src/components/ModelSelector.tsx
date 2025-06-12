@@ -14,6 +14,7 @@ import {
   Flex,
   Icon,
   Badge,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import { FiCpu, FiMessageSquare, FiZap } from 'react-icons/fi';
@@ -70,6 +71,11 @@ export const ModelSelector = ({
   const [selectedModels, setSelectedModels] = useState<AIModel[]>([]);
   const toast = useToast();
 
+  const bgColor = useColorModeValue('white', 'gray.800');
+  const borderColor = useColorModeValue('gray.200', 'whiteAlpha.200');
+  const textColor = useColorModeValue('gray.800', 'white');
+  const hoverBg = useColorModeValue('gray.50', 'whiteAlpha.100');
+
   const handleToggleModel = (model: AIModel) => {
     setSelectedModels((prev) =>
       prev.some((m) => m.id === model.id)
@@ -99,9 +105,9 @@ export const ModelSelector = ({
         maxH="80vh" 
         display="flex" 
         flexDirection="column"
-        bg="rgba(18, 18, 18, 0.95)"
+        bg={bgColor}
         border="1px solid"
-        borderColor="whiteAlpha.200"
+        borderColor={borderColor}
         borderRadius="xl"
         boxShadow="0 8px 32px rgba(0, 0, 0, 0.3)"
       >
@@ -110,16 +116,17 @@ export const ModelSelector = ({
           fontWeight="bold" 
           bg="transparent"
           borderBottom="1px solid"
-          borderColor="whiteAlpha.200"
+          borderColor={borderColor}
           pb={4}
+          color={textColor}
         >
           Select AI Models
         </ModalHeader>
         <ModalCloseButton 
           top={4} 
           right={4}
-          color="whiteAlpha.700"
-          _hover={{ color: 'white' }}
+          color={textColor}
+          _hover={{ color: 'gray.500' }}
         />
         <ModalBody flex="1" overflowY="auto" pb={6}>
           <VStack spacing={4} align="stretch">
@@ -134,7 +141,7 @@ export const ModelSelector = ({
                   border="1px solid"
                   borderColor={colors.border}
                   borderRadius="xl"
-                  bg={isSelected ? colors.bg : 'rgba(255, 255, 255, 0.05)'}
+                  bg={isSelected ? colors.bg : hoverBg}
                   cursor="pointer"
                   onClick={() => handleToggleModel(model)}
                   position="relative"

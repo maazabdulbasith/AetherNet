@@ -30,11 +30,12 @@ import {
   Card,
   Link,
 } from '@chakra-ui/react';
-import { FiSend, FiPlus, FiArrowLeft, FiMessageSquare, FiCpu, FiUsers, FiX, FiGithub, FiLinkedin, FiInfo, FiZap } from 'react-icons/fi';
+import { FiSend, FiPlus, FiArrowLeft, FiMessageSquare, FiCpu, FiUsers, FiX, FiGithub, FiLinkedin, FiInfo, FiZap, FiDatabase, FiCloud, FiServer } from 'react-icons/fi';
 import { useChatStore } from '../store/chatStore';
 import type { Message, AIModel } from '../types';
 import { aiService } from '../services/aiService';
 import { ModelInfoDialog } from './ModelInfoDialog';
+import { ModelSelector } from './ModelSelector';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -44,80 +45,6 @@ interface AIResponse {
   content: string;
   modelId: string;
 }
-
-const ModelSelectionModal = ({ isOpen, onClose, onStartChat }: { 
-  isOpen: boolean; 
-  onClose: () => void;
-  onStartChat: (selectedModels: AIModel[]) => void;
-}) => {
-  const { availableModels } = useChatStore();
-  const [selectedModels, setSelectedModels] = useState<AIModel[]>([]);
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
-  const hoverBg = useColorModeValue('gray.50', 'gray.700');
-
-  const toggleModel = (model: AIModel) => {
-    setSelectedModels(prev => 
-      prev.some(m => m.id === model.id)
-        ? prev.filter(m => m.id !== model.id)
-        : [...prev, model]
-    );
-  };
-
-  return (
-    <Modal isOpen={isOpen} onClose={onClose} size="xl">
-      <ModalOverlay />
-      <ModalContent bg={bgColor}>
-        <ModalHeader>Select AI Models</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody pb={6}>
-          <VStack spacing={4} align="stretch">
-            {availableModels.map((model) => (
-              <Box
-                key={model.id}
-                p={4}
-                border="1px solid"
-                borderColor={borderColor}
-                borderRadius="md"
-                cursor="pointer"
-                onClick={() => toggleModel(model)}
-                bg={selectedModels.some(m => m.id === model.id) ? hoverBg : 'transparent'}
-                _hover={{ bg: hoverBg }}
-                transition="all 0.2s"
-              >
-                <Flex justify="space-between" align="center">
-                  <VStack align="start" spacing={1}>
-                    <Heading size="sm">{model.name}</Heading>
-                    <HStack>
-                      <Badge colorScheme="green">{model.provider}</Badge>
-                      {model.isPaid && <Badge colorScheme="purple">Paid</Badge>}
-                    </HStack>
-                  </VStack>
-                  <Checkbox
-                    isChecked={selectedModels.some(m => m.id === model.id)}
-                    onChange={() => toggleModel(model)}
-                  />
-                </Flex>
-              </Box>
-            ))}
-          </VStack>
-          <Button
-            mt={6}
-            colorScheme="green"
-            isDisabled={selectedModels.length === 0}
-            onClick={() => {
-              onStartChat(selectedModels);
-              onClose();
-            }}
-            w="full"
-          >
-            Start Chat with {selectedModels.length} Model{selectedModels.length !== 1 ? 's' : ''}
-          </Button>
-        </ModalBody>
-      </ModalContent>
-    </Modal>
-  );
-};
 
 const LandingPage = () => {
   const { isOpen: isModelSelectorOpen, onOpen: onModelSelectorOpen, onClose: onModelSelectorClose } = useDisclosure();
@@ -268,10 +195,11 @@ const LandingPage = () => {
         </Text>
       </VStack>
 
-      <ModelSelectionModal
+      <ModelSelector
         isOpen={isModelSelectorOpen}
         onClose={onModelSelectorClose}
-        onStartChat={handleStartChat}
+        onSelect={handleStartChat}
+        availableModels={availableModels}
       />
       <ModelInfoDialog
         isOpen={isModelInfoOpen}
@@ -284,7 +212,7 @@ const LandingPage = () => {
 };
 
 const ChatInterface: React.FC = () => {
-  const { activeChat, setActiveChat, addMessage } = useChatStore();
+  const { activeChat, setActiveChat, addMessage, availableModels } = useChatStore();
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -429,6 +357,19 @@ const ChatInterface: React.FC = () => {
                       model?.provider === 'mistral' ? 'purple.500' :
                       model?.provider === 'cohere' ? 'pink.500' : 'green.500';
 
+    const getModelIcon = (provider: string) => {
+      switch (provider) {
+        case 'google':
+          return FiCloud;
+        case 'mistral':
+          return FiServer;
+        case 'cohere':
+          return FiDatabase;
+        default:
+          return FiCpu;
+      }
+    };
+
     return (
       <Box
         key={message.id}
@@ -444,7 +385,7 @@ const ChatInterface: React.FC = () => {
         <VStack align="start" spacing={2}>
           <HStack spacing={2}>
             <Icon
-              as={isUser ? FiUsers : FiCpu}
+              as={isUser ? FiUsers : getModelIcon(model?.provider || '')}
               color={isUser ? 'brand.soft.500' : modelColor}
             />
             <Text fontWeight="medium" color={isUser ? 'brand.soft.700' : modelColor}>
@@ -539,7 +480,7 @@ const ChatInterface: React.FC = () => {
       h="100vh"
       display="flex"
       flexDirection="column"
-      bg={useColorModeValue('gray.50', 'gray.900')}
+      bg={bgColor}
       position="relative"
     >
       {activeChat && (
@@ -675,16 +616,20 @@ const ChatInterface: React.FC = () => {
         )}
       </Box>
 
-      <ModelSelectionModal
+      <ModelSelector
         isOpen={isOpen}
         onClose={onClose}
-        onStartChat={(selectedModels) => {
+        onSelect={(selectedModels) => {
           const updatedChat = {
             ...activeChat,
-            participants: [...activeChat.participants, ...selectedModels],
+            participants: [...activeChat.participants, ...selectedModels]
           };
           setActiveChat(updatedChat);
+          onClose();
         }}
+        availableModels={availableModels.filter(model => 
+          !activeChat.participants.some(p => p.id === model.id)
+        )}
       />
     </Box>
   );

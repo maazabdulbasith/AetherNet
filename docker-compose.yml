@@ -1,0 +1,29 @@
+version: '3'
+services:
+  frontend:
+    container_name: AetherNet-frontend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    environment:
+      - GEMINI_KEY=${GEMINI_KEY}
+      - MISTRAL_KEY=${MISTRAL_KEY}
+      - COHERE_KEY=${COHERE_KEY}
+      - HF_KEY=${HF_KEY}
+    depends_on:
+      - backend
+
+  backend:
+    container_name: AetherNet-backend
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      - GEMINI_KEY=${GEMINI_KEY}
+      - MISTRAL_KEY=${MISTRAL_KEY}
+      - COHERE_KEY=${COHERE_KEY}
+      - HF_KEY=${HF_KEY}

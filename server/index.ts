@@ -65,9 +65,17 @@ app.post('/api/huggingface', async (req, res) => {
   try {
     const { message, context, model } = req.body;
     
+    // Format the prompt for chat models like Zephyr
     const prompt = context.length > 0
-      ? context.map((msg: any) => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`).join('\n') + `\nUser: ${message}\nAssistant:`
-      : `User: ${message}\nAssistant:`;
+      ? context.map((msg: any) => {
+          if (msg.role === 'system') {
+            return `<|system|>\n${msg.content}</s>`;
+          }
+          return msg.role === 'user' 
+            ? `<|user|>\n${msg.content}</s>`
+            : `<|assistant|>\n${msg.content}</s>`;
+        }).join('\n') + `\n<|user|>\n${message}</s>\n<|assistant|>`
+      : `<|user|>\n${message}</s>\n<|assistant|>`;
 
     const response = await axios.post(
       `https://api-inference.huggingface.co/models/${model}`,
@@ -107,7 +115,13 @@ app.post('/api/huggingface', async (req, res) => {
       throw new Error('No response generated');
     }
 
-    const cleanResponse = generatedText.replace(prompt, '').trim();
+    // Clean up the response by removing the prompt and any remaining tags
+    const cleanResponse = generatedText
+      .replace(prompt, '')
+      .replace(/<\|.*?\|>/g, '')
+      .replace(/<\/s>/g, '')
+      .trim();
+
     res.json({ content: cleanResponse });
   } catch (error: any) {
     console.error('HuggingFace API error:', error.response?.data || error.message);
@@ -152,6 +166,47 @@ app.post('/api/cohere', async (req, res) => {
     console.error('Cohere API error:', error.response?.data || error.message);
     res.status(500).json({ 
       error: 'Cohere API error',
+      details: error.response?.data || error.message 
+    });
+  }
+});
+
+// Mistral endpoint
+app.post('/api/mistral', async (req, res) => {
+  try {
+    const { message, context, model } = req.body;
+    
+    const response = await axios.post(
+      'https://api.mistral.ai/v1/chat/completions',
+      {
+        model,
+        messages: [
+          ...context.map((msg: any) => ({
+            role: msg.role,
+            content: msg.content,
+          })),
+          { role: 'user', content: message },
+        ],
+        temperature: 0.7,
+        max_tokens: 1000,
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.MISTRAL_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (!response.data.choices?.[0]?.message?.content) {
+      throw new Error('No response generated from Mistral');
+    }
+
+    res.json({ content: response.data.choices[0].message.content });
+  } catch (error: any) {
+    console.error('Mistral API error:', error.response?.data || error.message);
+    res.status(500).json({ 
+      error: 'Mistral API error',
       details: error.response?.data || error.message 
     });
   }
