@@ -41,7 +41,7 @@ app.use(cors({
 app.use(express.json());
 
 // Google Gemini endpoint
-app.post('/api/gemini', async (req, res) => {
+app.post('/gemini', async (req, res) => {
   try {
     const { message, context } = req.body;
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_KEY}`;
@@ -88,7 +88,7 @@ app.post('/api/gemini', async (req, res) => {
 });
 
 // HuggingFace endpoint
-app.post('/api/huggingface', async (req, res) => {
+app.post('/huggingface', async (req, res) => {
   try {
     const { message, context, model } = req.body;
 
@@ -165,7 +165,7 @@ app.post('/api/huggingface', async (req, res) => {
 });
 
 // Cohere endpoint
-app.post('/api/cohere', async (req, res) => {
+app.post('/cohere', async (req, res) => {
   try {
     const { message, context, model } = req.body;
 
@@ -208,7 +208,7 @@ app.post('/api/cohere', async (req, res) => {
 });
 
 // Mistral endpoint
-app.post('/api/mistral', async (req, res) => {
+app.post('/mistral', async (req, res) => {
   try {
     const { message, context, model } = req.body;
 
