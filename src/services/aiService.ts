@@ -219,6 +219,7 @@ class AIService {
       const response = await axios.post(`/api/cohere`, {
         message,
         context,
+        model: model.model
       });
 
       if (!response.data || !response.data.content) {
@@ -231,7 +232,10 @@ class AIService {
       };
     } catch (error: any) {
       console.error('Cohere API error:', error);
-      throw new Error(`Cohere API error: ${error.response?.status || 'Unknown error'}`);
+      if (error.response) {
+        throw new Error(`Cohere API error: ${error.response.status} - ${error.response.data?.error || 'Unknown error'}`);
+      }
+      throw new Error(`Cohere API error: ${error.message || 'Unknown error'}`);
     }
   }
 
@@ -318,9 +322,20 @@ export const sendToCohere = async (message: string, context: string = ''): Promi
       message,
       context
     });
-    return response.data;
+
+    if (!response.data || !response.data.content) {
+      throw new Error('Invalid response format from Cohere API');
+    }
+
+    return {
+      content: response.data.content,
+      modelId: response.data.modelId || 'cohere'
+    };
   } catch (error: any) {
     console.error('Cohere API error:', error);
-    throw new Error(`Cohere API error: ${error.response?.status || 'Unknown error'}`);
+    if (error.response) {
+      throw new Error(`Cohere API error: ${error.response.status} - ${error.response.data?.error || 'Unknown error'}`);
+    }
+    throw new Error(`Cohere API error: ${error.message || 'Unknown error'}`);
   }
 }; 
