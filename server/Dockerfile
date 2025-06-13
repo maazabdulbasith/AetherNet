@@ -5,14 +5,17 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci
+# Install ALL dependencies (including dev)
+RUN npm install
 
 # Copy source code
 COPY . .
 
-# Expose the port your server runs on
+# Build the project (transpile TypeScript to JS)
+RUN npm run build
+
+# Expose the port
 EXPOSE 4000
 
-# Start the server
-CMD ["npm", "start"] 
+# Start the server from compiled JavaScript
+CMD ["node", "dist/index.js"]
