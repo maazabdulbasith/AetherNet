@@ -12,7 +12,7 @@ RUN npm ci
 COPY . .
 
 # Expose the port your server runs on
-EXPOSE 3000
+EXPOSE 4000
 
 # Start the server
 CMD ["npm", "start"] 

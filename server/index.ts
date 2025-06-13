@@ -15,6 +15,11 @@ console.log('PORT:', process.env.PORT || 4000);
 
 const app = express();
 
+// Health check endpoint
+app.get('/', (_, res) => {
+  res.send('Backend is running ✅');
+});
+
 // Configure CORS
 const allowedOrigins = [
   'https://aethernet-f.onrender.com',  // Production frontend
